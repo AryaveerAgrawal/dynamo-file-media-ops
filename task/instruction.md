@@ -1,24 +1,17 @@
-A decoder for the XAF audio container has been lost. Rebuild it.
+<!--
+  This file is the PROMPT handed verbatim to the model that will attempt your task.
+  Replace everything in this comment with your task instruction, then delete the comment.
 
-`/app/data/SPEC.md` documents the 20-byte file header and nothing else. The block
-encoding is undocumented and you have to recover it from evidence.
+  Guidelines:
+  - Write it yourself, as a domain expert. Do NOT generate it with an LLM.
+  - It's a prompt, not a document — no title, no section headers, no excessive Markdown.
+  - Write it the way you'd brief a skilled colleague.
+  - Use absolute paths (e.g. /app/output.txt), never relative paths.
+  - Be explicit about every expected output file and its exact format/schema.
+  - Include everything the agent needs to solve the task — and nothing more (don't
+    hint at or reveal your solution).
+  - Keep it concise (<= 1500 tokens). State the goal and required outputs; skip
+    backstory, roleplay, and filler.
+-->
 
-`/app/data/corpus/` holds ten pairs, `c01.xaf` through `c10.xaf`, each next to the
-`.wav` file the original decoder produced from it. Those pairs determine the encoding
-uniquely. `/app/data/holdout/` holds five more files, `h01.xaf` through `h05.xaf`, with
-no `.wav` beside them.
-
-Decode all five holdout files and write the results to `/app/out/h01.wav`,
-`/app/out/h02.wav`, `/app/out/h03.wav`, `/app/out/h04.wav` and `/app/out/h05.wav`.
-
-Each output must be a RIFF WAVE file containing 16-bit signed PCM, little-endian, with
-channels interleaved. Its channel count and sample rate must match the `channels` and
-`sample_rate` fields of the corresponding `.xaf` header, and it must contain exactly
-`total_frames` frames as declared in that same header.
-
-Your output is compared sample for sample against the reference decode. Every sample of
-every file must match exactly, so an approximation of the codec is not enough.
-
-Do not modify anything in `/app/data/`.
-
-You have 2400 seconds to complete this task. Do not cheat by using online solutions or hints specific to this task.
+Replace this file with your task instruction.

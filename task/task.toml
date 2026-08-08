@@ -1,83 +1,38 @@
-artifacts = [
-  "/app/out/h01.wav",
-  "/app/out/h02.wav",
-  "/app/out/h03.wav",
-  "/app/out/h04.wav",
-  "/app/out/h05.wav",
-]
+artifacts = []  # paths the verifier reads from the agent (e.g. ["/app/output.json"]) — must be above the first [section]
 
 [task]
-name = "dynamo/xaf-codec-recovery"
-description = "Recover an undocumented block-based audio codec from paired examples and decode five held-out files bit-exactly."
+name = "dynamo/your-task-name"  # required format: org/name (Harbor needs the slash); name part lowercase kebab-case, <=3 words
+description = ""                 # one-line summary of the task
 
 [metadata]
-category = "File and Media Operations"
-subcategory = "Audio and music processing"
-model_tested = "Opus-4.8"
-agent_tested = "Terminus-2"
-task_objective = ["recover_or_repair_artifact", "implement"]
-artifact_type = ["media_artifact", "single_script_or_program"]
-expert_time_estimate_hours = 5
-difficulty_explanation = """
-The block encoding of the XAF container is undocumented and none of its unknowns are
-observable in isolation. The step table cannot be read off the data without the predictor
-coefficients, the coefficients cannot be fitted without knowing where the block header
-ends, and the packing order cannot be pinned without already decoding something, so
-byte-diffing, pattern-matching a published codec and brute-forcing one field at a time all
-fail to converge. Difficulty is amplified for an agent specifically because the decoder is
-recursive: a wrong constant does not produce a near-miss it can iterate against, it
-diverges across the whole block, so there is no gradient and no partial-credit signal to
-hill-climb on. A secondary coverage hazard sits on top of that. One of the six predictor
-selectors appears in only 6 of 1146 corpus blocks, all of them inside a single file, but in
-97 of 502 held-out blocks. A decoder fitted to the bulk of the visible data reproduces nine
-of the ten supplied reference WAVs exactly and corrupts roughly 19 percent of samples in
-every held-out file. It is detectable, but only by validating against the whole corpus
-rather than a sample of it, which is the discipline the task rewards. That selector occurs
-in the corpus in a zero-residual block where the clean recovery path exposes its
-coefficients directly, so nothing the verifier grades is hidden from the agent.
-"""
-solution_explanation = """
-Break the circular dependency at the blocks where the system degenerates. Blocks whose
-residual codes are all zero contribute nothing from the quantiser, so their output is pure
-predictor recursion and each decoded sample yields one linear equation in the two unknown
-coefficients. Least squares over those blocks recovers each selector's coefficient pair
-exactly, with the arithmetic shift pinned by requiring the fit to reproduce every sample
-rather than merely approximate it. With the predictor known the recursion inverts: the
-residual behind each code is the decoded sample minus the prediction, and the ratio of
-residual to code magnitude constrains the quantiser step in force at that moment. Block
-headers record the step index at every block start, which yields direct observations for 31
-of the 32 table entries, and the index-adjust rule then follows from the transition between
-the first and second sample of each block. Propagating those constraints across the corpus
-determines both tables, after which decoding the held-out files is mechanical. The
-reference solution performs this recovery from the shipped corpus at run time and hardcodes
-no table, coefficient or threshold.
-"""
-verification_explanation = """
-The held-out inputs ship in the agent's environment without their decoded counterparts, so
-the agent produces the five WAVs during its own run and the verifier only reads finished
-artifacts, never executing agent code while the answer key is mounted. Each output is
-checked to exist as a real file, to resolve inside /app/out rather than through a symlink
-aimed at the verifier's tree, to carry 16-bit PCM, and to match the channel count, sample
-rate and frame count declared in the corresponding .xaf header. Correctness is then a
-byte-for-byte comparison of decoded PCM against reference WAVs that live in tests/ and are
-absent during the agent run. No tolerance is used because the codec is integer arithmetic
-throughout, so each input has exactly one correct output and a tolerance could only admit
-wrong answers. A further test requires the five decodes to be mutually distinct so one file
-copied five times cannot pass, and the shipped inputs are hash-pinned so the graded outcome
-cannot be influenced by editing them.
-"""
+# --- Pre-seeded for you when this repo was created — DO NOT EDIT ---
+category = "File and Media Operations"                      # diversity category, assigned to your task by the Dynamo team
+subcategory = "Audio and music processing"                   # diversity subcategory, assigned by the Dynamo team
+# --- Fixed for this dataset — LEAVE AS-IS ---
+model_tested = "Opus-4.8"           # difficulty-benchmarking model (do not change)
+agent_tested = "Terminus-2"        # difficulty-benchmarking agent (do not change)
+# --- You fill these in ---
+# task_objective / artifact_type: pick from .dynamo/diversity-taxonomy.toml (lowercase snake_case).
+task_objective = []                # e.g. ["implement", "debug"]
+artifact_type = []                 # e.g. ["codebase", "configuration_file"]
+expert_time_estimate_hours = 0     # best-case hours for a focused domain expert with the intended insight
+difficulty_explanation = ""        # why this task is hard for agents and humans
+solution_explanation = ""          # high-level approach and key insights
+verification_explanation = ""      # how the tests verify correctness
 
 [verifier]
-timeout_sec = 300.0
+timeout_sec = 120.0                # increase based on your test suite's runtime demands
+# Canonical TB2: the verifier runs in the environment image (no separate tests/Dockerfile).
+# Harbor overlays tests/ at verify time; leave environment_mode unset for this shared model.
 
 [agent]
-timeout_sec = 2400.0
+timeout_sec = 120.0                # raise for hard tasks — agents may run for many minutes or hours
 
 [environment]
-build_timeout_sec = 600.0
-cpus = 2
-memory_mb = 2048
-storage_mb = 10240
-gpus = 0
-allow_internet = true
-mcp_servers = []
+build_timeout_sec = 600.0          # max seconds for the Docker build
+cpus = 1                           # increase for parallel/compute-heavy workloads
+memory_mb = 2048                   # increase for large datasets or in-memory processing
+storage_mb = 10240                 # increase for tasks with large files or build artifacts
+gpus = 0                           # max 1, expect H100
+allow_internet = true              # open internet is available to the agent
+mcp_servers = []                   # optional MCP servers to expose to the agent
