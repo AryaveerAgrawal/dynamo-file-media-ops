@@ -71,7 +71,7 @@ cannot be influenced by editing them.
 timeout_sec = 300.0
 
 [agent]
-timeout_sec = 2400.0
+timeout_sec = 3600.0
 
 [environment]
 build_timeout_sec = 600.0
