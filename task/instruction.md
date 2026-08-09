@@ -21,4 +21,4 @@ every file must match exactly, so an approximation of the codec is not enough.
 
 Do not modify anything in `/app/data/`.
 
-You have 2400 seconds to complete this task. Do not cheat by using online solutions or hints specific to this task.
+You have 3600 seconds to complete this task. Do not cheat by using online solutions or hints specific to this task. 
